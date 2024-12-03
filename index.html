@@ -215,28 +215,47 @@
         });
 
         checkoutForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!qrScanned) {
-                errorDiv.textContent = 'Please scan the QR code before submitting the form.';
-                return;
-            }
-            const studentId = document.getElementById('studentId').value;
-            if (!studentId.startsWith('02000')) {
-                errorDiv.textContent = 'Invalid Student ID format. Please enter a valid ID starting with "02000".';
-                return;
-            }
-            const timestamp = new Date().toISOString();
-            let attendance = JSON.parse(localStorage.getItem('attendance')) || [];
-            const studentIndex = attendance.findIndex(student => student.studentId === studentId);
-            if (studentIndex !== -1) {
-                attendance[studentIndex].checkOutTime = timestamp;
-                localStorage.setItem('attendance', JSON.stringify(attendance));
-                document.getElementById('message').textContent = 'Check-out successful!';
-                errorDiv.textContent = '';
-            } else {
-                errorDiv.textContent = 'Student not found. Please check your ID.';
-            }
-        });
+    e.preventDefault();
+    if (!qrScanned) {
+        errorDiv.textContent = 'Please scan the QR code before submitting the form.';
+        return;
+    }
+    const studentId = document.getElementById('studentId').value;
+    if (!studentId.startsWith('02000')) {
+        errorDiv.textContent = 'Invalid Student ID format. Please enter a valid ID starting with "02000".';
+        return;
+    }
+    const timestamp = new Date().toISOString();
+
+    // Prepare the data to send to the admin page (or API endpoint)
+    const data = {
+        studentId: studentId,
+        checkOutTime: timestamp,
+    };
+
+    // Send a POST request to the server with the checkout data
+    fetch('https://sti-attendance-api.glitch.me/attendance/check-out', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            document.getElementById('message').textContent = 'Check-out successful!';
+            errorDiv.textContent = '';
+        } else {
+            errorDiv.textContent = 'There was an issue with the check-out process. Please try again.';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        errorDiv.textContent = 'An error occurred while processing the check-out. Please try again.';
+    });
+});
+
     </script>
 </body>
 </html>
