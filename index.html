@@ -241,19 +241,20 @@
                         };
 
                         fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(checkoutData),
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            document.getElementById('message').textContent = 'Check-out successful!';
-                            errorDiv.textContent = '';
-                        })
-                        .catch(error => {
-                            errorDiv.textContent = 'Error checking out. Please try again.';
-                            console.error('Error:', error);
-                        });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ studentId: studentId }),  // Send studentId instead of username
+})
+.then(response => response.json())
+.then(data => {
+  document.getElementById('message').textContent = 'Check-out successful!';
+  errorDiv.textContent = '';
+})
+.catch(error => {
+  errorDiv.textContent = 'Error checking out. Please try again.';
+  console.error('Error:', error);
+});
+
                     } else {
                         errorDiv.textContent = 'Invalid student ID. Please enter your correct ID.';
                     }
