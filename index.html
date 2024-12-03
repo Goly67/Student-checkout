@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,11 +10,16 @@
         :root {
             --primary-color: #4a90e2;
             --secondary-color: #f39c12;
-            --background-color: #222; /* Dark background */
-            --text-color: #fff; /* Light text */
-            --card-background: #333; /* Dark card background */
-            --border-color: #555; /* Dark border */
+            --background-color: #222;
+            /* Dark background */
+            --text-color: #fff;
+            /* Light text */
+            --card-background: #333;
+            /* Dark card background */
+            --border-color: #555;
+            /* Dark border */
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--background-color);
@@ -22,58 +28,73 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
+
         h1 {
             text-align: center;
             color: var(--primary-color);
         }
+
         .card {
             background-color: var(--card-background);
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Darker shadow */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            /* Darker shadow */
             padding: 20px;
             margin-bottom: 20px;
         }
+
         .flex-container {
             display: flex;
             justify-content: space-between;
             gap: 20px;
         }
+
         #videoContainer {
             flex: 1;
             position: relative;
             max-width: 400px;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Darker shadow */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            /* Darker shadow */
         }
+
         #qrCanvas {
             position: absolute;
             top: 0;
             left: 0;
         }
+
         #video {
             width: 100%;
             display: block;
         }
+
         form {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-        input, select, button {
+
+        input,
+        select,
+        button {
             margin: 10px 0;
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 16px;
-            background-color: #444; /* Dark input background */
+            background-color: #444;
+            /* Dark input background */
             color: var(--text-color);
         }
+
         button {
             background-color: var(--secondary-color);
             color: white;
@@ -81,35 +102,43 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         button:hover {
             background-color: #e67e22;
         }
+
         button:disabled {
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
+
         #message {
             text-align: center;
             margin-top: 20px;
             font-weight: bold;
             color: #2ecc71;
         }
+
         #error {
             text-align: center;
             margin-top: 20px;
             font-weight: bold;
             color: #e74c3c;
         }
+
         @media (max-width: 768px) {
             .flex-container {
                 flex-direction: column;
             }
-            #videoContainer, form {
+
+            #videoContainer,
+            form {
                 width: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Student Attendance Check-Out</h1>
@@ -130,7 +159,7 @@
         <div id="error"></div>
     </div>
     <script>
-        
+
         const video = document.getElementById('video');
         const qrCanvas = document.getElementById('qrCanvas');
         const qrContext = qrCanvas.getContext('2d');
@@ -142,7 +171,7 @@
         let qrScanned = false;
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(function(stream) {
+            .then(function (stream) {
                 video.srcObject = stream;
                 video.setAttribute("playsinline", true);
                 video.play();
@@ -206,7 +235,7 @@
         });
 
         // Input validation: Only allow numbers and make sure it starts with "02000"
-        studentIdInput.addEventListener('input', function(e) {
+        studentIdInput.addEventListener('input', function (e) {
             this.value = this.value.replace(/[^0-9]/g, ''); // Allow only numbers
             if (this.value.startsWith('02000')) {
                 this.value = '02000' + this.value.slice(5); // Ensure "02000" is always present
@@ -215,7 +244,7 @@
             }
         });
 
-        checkoutForm.addEventListener('submit', function(e) {
+        checkoutForm.addEventListener('submit', function (e) {
             e.preventDefault();
             if (!qrScanned) {
                 errorDiv.textContent = 'Please scan the QR code before submitting the form.';
@@ -229,50 +258,42 @@
             const timestamp = new Date().toISOString();
 
             // Fetch student attendance data to check if this student ID is valid
-fetch(`https://sti-attendance-api.glitch.me/api/attendance/${studentId}`)
-    .then(response => response.json())
-    .then(data => {
-        // If student ID exists in the attendance system
-        if (data && data.studentId === studentId) {
-            // Proceed with check-out
-            const checkoutData = {
-                studentId: studentId,
-                checkOutTime: timestamp,
-            };
+            fetch(`https://sti-attendance-api.glitch.me/api/attendance/${studentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // If student ID exists in the attendance system
+                    if (data && data.studentId === studentId) {
+                        // Proceed with check-out
+                        const checkoutData = {
+                            studentId: studentId,
+                            checkOutTime: timestamp,
+                        };
 
-            fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(checkoutData),  // Send studentId and check-out time
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('message').textContent = 'Check-out successful!';
-                errorDiv.textContent = '';
-            })
-            .catch(error => {
-                errorDiv.textContent = 'Error checking out. Please try again.';
-                console.error('Error:', error);
-            });
-        } else {
-            errorDiv.textContent = 'Invalid Student ID. Please try again.';
-        }
-    })
-    .catch(error => {
-        errorDiv.textContent = 'Error checking student. Please try again.';
-        console.error('Error:', error);
-    });
-
-
+                        fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(checkoutData),  // Send studentId and check-out time
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('message').textContent = 'Check-out successful!';
+                                errorDiv.textContent = '';
+                            })
+                            .catch(error => {
+                                errorDiv.textContent = 'Error checking out. Please try again.';
+                                console.error('Error:', error);
+                            });
                     } else {
-                        errorDiv.textContent = 'Invalid student ID. Please enter your correct ID.';
+                        errorDiv.textContent = 'Invalid Student ID. Please try again.';
                     }
                 })
                 .catch(error => {
-                    errorDiv.textContent = 'Error checking student ID. Please try again.';
+                    errorDiv.textContent = 'Error checking student. Please try again.';
                     console.error('Error:', error);
                 });
         });
+
     </script>
 </body>
+
 </html>
