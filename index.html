@@ -130,6 +130,7 @@
         <div id="error"></div>
     </div>
     <script>
+        
         const video = document.getElementById('video');
         const qrCanvas = document.getElementById('qrCanvas');
         const qrContext = qrCanvas.getContext('2d');
@@ -227,26 +228,40 @@
             }
             const timestamp = new Date().toISOString();
 
-            // Prepare the data to send to the admin page (or API endpoint)
-            const data = {
-                studentId: studentId,
-                checkOutTime: timestamp,
-            };
+            // Fetch student attendance data to check if this student ID is valid
+            fetch(`https://sti-attendance-api.glitch.me/api/attendance/${studentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // If student ID exists in the attendance system
+                    if (data && data.studentId === studentId) {
+                        // Proceed with check-out
+                        const checkoutData = {
+                            studentId: studentId,
+                            checkOutTime: timestamp,
+                        };
 
-            fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('message').textContent = 'Check-out successful!';
-                errorDiv.textContent = '';
-            })
-            .catch(error => {
-                errorDiv.textContent = 'Error checking out. Please try again.';
-                console.error('Error:', error);
-            });
+                        fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(checkoutData),
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('message').textContent = 'Check-out successful!';
+                            errorDiv.textContent = '';
+                        })
+                        .catch(error => {
+                            errorDiv.textContent = 'Error checking out. Please try again.';
+                            console.error('Error:', error);
+                        });
+                    } else {
+                        errorDiv.textContent = 'Invalid student ID. Please enter your correct ID.';
+                    }
+                })
+                .catch(error => {
+                    errorDiv.textContent = 'Error checking student ID. Please try again.';
+                    console.error('Error:', error);
+                });
         });
     </script>
 </body>
