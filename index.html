@@ -233,28 +233,27 @@
         checkOutTime: timestamp,
     };
 
-    // Send a POST request to the server with the checkout data
-    fetch('https://sti-attendance-api.glitch.me/attendance/check-out', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            document.getElementById('message').textContent = 'Check-out successful!';
-            errorDiv.textContent = '';
-        } else {
-            errorDiv.textContent = 'There was an issue with the check-out process. Please try again.';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        errorDiv.textContent = 'An error occurred while processing the check-out. Please try again.';
-    });
+    fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+})
+.then(response => response.json())
+.then(result => {
+    if (result.success) {
+        document.getElementById('message').textContent = 'Check-out successful!';
+        errorDiv.textContent = '';
+    } else {
+        errorDiv.textContent = 'There was an issue with the check-out process. Please try again.';
+    }
+})
+.catch(error => {
+    console.error('Error:', error);
+    errorDiv.textContent = 'An error occurred while processing the check-out. Please try again.';
 });
+
 
     </script>
 </body>
