@@ -215,46 +215,39 @@
         });
 
         checkoutForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (!qrScanned) {
-        errorDiv.textContent = 'Please scan the QR code before submitting the form.';
-        return;
-    }
-    const studentId = document.getElementById('studentId').value;
-    if (!studentId.startsWith('02000')) {
-        errorDiv.textContent = 'Invalid Student ID format. Please enter a valid ID starting with "02000".';
-        return;
-    }
-    const timestamp = new Date().toISOString();
+            e.preventDefault();
+            if (!qrScanned) {
+                errorDiv.textContent = 'Please scan the QR code before submitting the form.';
+                return;
+            }
+            const studentId = document.getElementById('studentId').value;
+            if (!studentId.startsWith('02000')) {
+                errorDiv.textContent = 'Invalid Student ID format. Please enter a valid ID starting with "02000".';
+                return;
+            }
+            const timestamp = new Date().toISOString();
 
-    // Prepare the data to send to the admin page (or API endpoint)
-    const data = {
-        studentId: studentId,
-        checkOutTime: timestamp,
-    };
+            // Prepare the data to send to the admin page (or API endpoint)
+            const data = {
+                studentId: studentId,
+                checkOutTime: timestamp,
+            };
 
-    fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-})
-.then(response => response.json())
-.then(result => {
-    if (result.success) {
-        document.getElementById('message').textContent = 'Check-out successful!';
-        errorDiv.textContent = '';
-    } else {
-        errorDiv.textContent = 'There was an issue with the check-out process. Please try again.';
-    }
-})
-.catch(error => {
-    console.error('Error:', error);
-    errorDiv.textContent = 'An error occurred while processing the check-out. Please try again.';
-});
-
-
+            fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').textContent = 'Check-out successful!';
+                errorDiv.textContent = '';
+            })
+            .catch(error => {
+                errorDiv.textContent = 'Error checking out. Please try again.';
+                console.error('Error:', error);
+            });
+        });
     </script>
 </body>
 </html>
