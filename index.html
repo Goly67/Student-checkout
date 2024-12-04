@@ -261,21 +261,29 @@ const video = document.getElementById('video');
             };
 
             fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(checkoutData),
-            })
-            .then(response => response.json())
-            .then(() => {
-                document.getElementById('message').textContent = 'Student has been successfully checked out!';
-                errorDiv.textContent = '';
-                checkoutForm.reset();
-                submitButton.disabled = true;
-                qrScanned = false;
-            })
-            .catch(error => {
-                errorDiv.textContent = error.message;
-            });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(checkoutData),
+})
+.then(response => {
+    if (!response.ok) {
+        // If the response is not OK, throw an error with the message from the response
+        return response.json().then(err => { throw new Error(err.message); });
+    }
+    return response.json(); // If the response is OK, return the JSON data
+})
+.then(data => {
+    // If we reach here, it means the checkout was successful
+    document.getElementById('message').textContent = 'Student has been successfully checked out!';
+    errorDiv.textContent = '';
+    checkoutForm.reset();
+    submitButton.disabled = true;
+    qrScanned = false;
+})
+.catch(error => {
+    // Handle any errors that occurred during the fetch or response processing
+    errorDiv.textContent = error.message;
+});
         });
 
     </script>
