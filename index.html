@@ -259,39 +259,41 @@
 
             // Fetch student attendance data to check if this student ID is valid
             fetch(`https://sti-attendance-api.glitch.me/api/attendance/${studentId}`)
-                .then(response => response.json())
-                .then(data => {
-                    // If student ID exists in the attendance system
-                    if (data && data.studentId === studentId) {
-                        // Proceed with check-out
-                        const checkoutData = {
-                            studentId: studentId,
-                            checkOutTime: timestamp,
-                        };
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data && data.studentId === studentId) {
+      // Proceed with check-out
+      const checkoutData = { studentId, checkOutTime: new Date().toISOString() };
 
-                        fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(checkoutData),  // Send studentId and check-out time
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                document.getElementById('message').textContent = 'Check-out successful!';
-                                errorDiv.textContent = '';
-                            })
-                            .catch(error => {
-                                errorDiv.textContent = 'Error checking out. Please try again.';
-                                console.error('Error:', error);
-                            });
-                    } else {
-                        errorDiv.textContent = 'Invalid Student ID. Please try again.';
-                    }
-                })
-                .catch(error => {
-                    errorDiv.textContent = 'Error checking student. Please try again.';
-                    console.error('Error:', error);
-                });
-        });
+      return fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(checkoutData),
+      });
+    } else {
+      throw new Error('Invalid Student ID');
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    document.getElementById('message').textContent = 'Check-out successful!';
+    errorDiv.textContent = '';
+  })
+  .catch(error => {
+    errorDiv.textContent = error.message;
+    console.error('Error:', error);
+  });
+
 
     </script>
 </body>
