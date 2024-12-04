@@ -159,10 +159,7 @@
         <div id="error"></div>
     </div>
     <script>
-
-        
-
-        const video = document.getElementById('video');
+const video = document.getElementById('video');
         const qrCanvas = document.getElementById('qrCanvas');
         const qrContext = qrCanvas.getContext('2d');
         const checkoutForm = document.getElementById('checkoutForm');
@@ -279,6 +276,7 @@
             .catch(error => {
                 errorDiv.textContent = error.message;
             });
+        });
 
     </script>
 </body>
