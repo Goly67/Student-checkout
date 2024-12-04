@@ -160,6 +160,8 @@
     </div>
     <script>
 
+        
+
         const video = document.getElementById('video');
         const qrCanvas = document.getElementById('qrCanvas');
         const qrContext = qrCanvas.getContext('2d');
@@ -256,36 +258,27 @@
                 return;
             }
             const timestamp = new Date().toISOString();
+            const checkoutData = {
+                studentId: studentId,
+                timestamp: timestamp,
+            };
 
-            // Send check-out data without fetching attendance first
-fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(checkoutData),
-})
-.then(response => response.json())
-.then(() => {
-    document.getElementById('message').textContent = 'Student has been successfully checked out!';
-    errorDiv.textContent = '';
-    checkoutForm.reset();
-    submitButton.disabled = true;
-    qrScanned = false;
-})
-.catch(error => {
-    errorDiv.textContent = error.message;
-});
-                .then(response => response.json())
-                .then(() => {
-                    document.getElementById('message').textContent = 'Student has been successfully checked out!';
-                    errorDiv.textContent = '';
-                    checkoutForm.reset();
-                    submitButton.disabled = true;
-                    qrScanned = false;
-                })
-                .catch(error => {
-                    errorDiv.textContent = error.message;
-                });
-        });
+            fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(checkoutData),
+            })
+            .then(response => response.json())
+            .then(() => {
+                document.getElementById('message').textContent = 'Student has been successfully checked out!';
+                errorDiv.textContent = '';
+                checkoutForm.reset();
+                submitButton.disabled = true;
+                qrScanned = false;
+            })
+            .catch(error => {
+                errorDiv.textContent = error.message;
+            });
 
     </script>
 </body>
