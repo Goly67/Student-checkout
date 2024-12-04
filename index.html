@@ -259,41 +259,38 @@
 
             // Fetch student attendance data to check if this student ID is valid
             fetch(`https://sti-attendance-api.glitch.me/api/attendance/${studentId}`)
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (data && data.studentId === studentId) {
-      // Proceed with check-out
-      const checkoutData = { studentId, checkOutTime: new Date().toISOString() };
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.studentId === studentId) {
+                        // Proceed with check-out
+                        const checkoutData = { studentId, checkOutTime: new Date().toISOString() };
 
-      return fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(checkoutData),
-      });
-    } else {
-      throw new Error('Invalid Student ID');
-    }
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    document.getElementById('message').textContent = 'Check-out successful!';
-    errorDiv.textContent = '';
-  })
-  .catch(error => {
-    errorDiv.textContent = error.message;
-    console.error('Error:', error);
-  });
-
+                        return fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(checkoutData),
+                        });
+                    } else {
+                        throw new Error('Student not found.');
+                    }
+                })
+                .then(response => response.json())
+                .then(() => {
+                    document.getElementById('message').textContent = 'Student has been successfully checked out!';
+                    errorDiv.textContent = '';
+                    checkoutForm.reset();
+                    submitButton.disabled = true;
+                    qrScanned = false;
+                })
+                .catch(error => {
+                    errorDiv.textContent = error.message;
+                });
+        });
 
     </script>
 </body>
