@@ -160,131 +160,127 @@
     </div>
     <script>
 const video = document.getElementById('video');
-        const qrCanvas = document.getElementById('qrCanvas');
-        const qrContext = qrCanvas.getContext('2d');
-        const checkoutForm = document.getElementById('checkoutForm');
-        const submitButton = checkoutForm.querySelector('button[type="submit"]');
-        const errorDiv = document.getElementById('error');
-        const studentIdInput = document.getElementById('studentId');
-        const qrImageInput = document.getElementById('qrImageInput');
-        let qrScanned = false;
+const qrCanvas = document.getElementById('qrCanvas');
+const qrContext = qrCanvas.getContext('2d');
+const checkoutForm = document.getElementById('checkoutForm');
+const submitButton = checkoutForm.querySelector('button[type="submit"]');
+const errorDiv = document.getElementById('error');
+const studentIdInput = document.getElementById('studentId');
+const qrImageInput = document.getElementById('qrImageInput');
+let qrScanned = false;
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(function (stream) {
-                video.srcObject = stream;
-                video.setAttribute("playsinline", true);
-                video.play();
-                requestAnimationFrame(tick);
-            });
+navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(function (stream) {
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+        requestAnimationFrame(tick);
+    });
 
-        function tick() {
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                qrCanvas.height = video.videoHeight;
-                qrCanvas.width = video.videoWidth;
-                qrContext.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
-                var imageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-                var code = jsQR(imageData.data, imageData.width, imageData.height, {
-                    inversionAttempts: "dontInvert",
-                });
-                if (code) {
-                    console.log("QR Code detected", code.data);
-                    if (code.data === "check-out") {
-                        qrScanned = true;
-                        submitButton.disabled = false;
-                        document.getElementById('message').textContent = 'QR Code scanned successfully. You can now submit the form.';
-                        errorDiv.textContent = '';
-                    }
-                }
-            }
-            if (!qrScanned) {
-                requestAnimationFrame(tick);
+function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        qrCanvas.height = video.videoHeight;
+        qrCanvas.width = video.videoWidth;
+        qrContext.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
+        var imageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+        var code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+        });
+        if (code) {
+            console.log("QR Code detected", code.data);
+            if (code.data === "check-out") {
+                qrScanned = true;
+                submitButton.disabled = false;
+                document.getElementById('message').textContent = 'QR Code scanned successfully. You can now submit the form.';
+                errorDiv.textContent = '';
             }
         }
-
-        qrImageInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    qrCanvas.width = img.width;
-                    qrCanvas.height = img.height;
-                    qrContext.drawImage(img, 0, 0);
-                    const imageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                        inversionAttempts: "dontInvert",
-                    });
-                    if (code) {
-                        console.log("QR Code detected", code.data);
-                        if (code.data === "check-out") {
-                            qrScanned = true;
-                            submitButton.disabled = false;
-                            document.getElementById('message').textContent = 'QR Code scanned successfully. You can now submit the form.';
-                            errorDiv.textContent = '';
-                        }
-                    } else {
-                        errorDiv.textContent = 'Invalid QR Code. Please upload a valid QR code image.';
-                    }
-                };
-                img.src = e.target.result;
-            };
-
-            reader.readAsDataURL(file);
-        });
-
-        // Input validation: Only allow numbers and make sure it starts with "02000"
-        studentIdInput.addEventListener('input', function (e) {
-            this.value = this.value.replace(/[^0-9]/g, ''); // Allow only numbers
-            if (this.value.startsWith('02000')) {
-                this.value = '02000' + this.value.slice(5); // Ensure "02000" is always present
-            } else if (this.value.length > 0 && !this.value.startsWith('02000')) {
-                this.value = '02000'; // If not starting with "02000", reset to "02000"
-            }
-        });
-
-        checkoutForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            if (!qrScanned) {
-                errorDiv.textContent = 'Please scan the QR code before submitting the form.';
-                return;
-            }
-            const studentId = document.getElementById('studentId').value;
-            if (!studentId.startsWith('02000')) {
-                errorDiv.textContent = 'Invalid Student ID format. Please enter a valid ID starting with "02000".';
-                return;
-            }
-            const timestamp = new Date().toISOString();
-            const checkoutData = {
-                studentId: studentId,
-                timestamp: timestamp,
-            };
-
-            fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(checkoutData),
-})
-.then(response => {
-    if (!response.ok) {
-        // If the response is not OK, throw an error with the message from the response
-        return response.json().then(err => { throw new Error(err.message); });
     }
-    return response.json(); // If the response is OK, return the JSON data
-})
-.then(data => {
-    // If we reach here, it means the checkout was successful
-    document.getElementById('message').textContent = 'Student has been successfully checked out!';
-    errorDiv.textContent = '';
-    checkoutForm.reset();
-    submitButton.disabled = true;
-    qrScanned = false;
-})
-.catch(error => {
-    // Handle any errors that occurred during the fetch or response processing
-    errorDiv.textContent = error.message;
+    if (!qrScanned) {
+        requestAnimationFrame(tick);
+    }
+}
+
+qrImageInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            qrCanvas.width = img.width;
+            qrCanvas.height = img.height;
+            qrContext.drawImage(img, 0, 0);
+            const imageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+            if (code) {
+                console.log("QR Code detected", code.data);
+                if (code.data === "check-out") {
+                    qrScanned = true;
+                    submitButton.disabled = false;
+                    document.getElementById('message').textContent = 'QR Code scanned successfully. You can now submit the form.';
+                    errorDiv.textContent = '';
+                }
+            } else {
+                errorDiv.textContent = 'Invalid QR Code. Please upload a valid QR code image.';
+            }
+        };
+        img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
 });
-        });
+
+// Input validation: Only allow numbers and ensure it starts with "02000"
+studentIdInput.addEventListener('input', function (e) {
+    this.value = this.value.replace(/[^0-9]/g, ''); // Allow only numbers
+    // We do NOT automatically add "02000" here; users need to input it manually
+});
+
+checkoutForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!qrScanned) {
+        errorDiv.textContent = 'Please scan the QR code before submitting the form.';
+        return;
+    }
+    const studentId = document.getElementById('studentId').value;
+
+    // Ensure the student ID starts with "02000" and is followed by exactly 6 digits
+    if (!studentId.startsWith('02000') || studentId.length !== 11) {
+        errorDiv.textContent = 'Invalid Student ID format. Please enter a valid ID starting with "02000" and followed by 6 digits.';
+        return;
+    }
+
+    const timestamp = new Date().toISOString();
+    const checkoutData = {
+        studentId: studentId,
+        timestamp: timestamp,
+    };
+
+    fetch('https://sti-attendance-api.glitch.me/api/attendance/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(checkoutData),
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.message); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('message').textContent = 'Student has been successfully checked out!';
+        errorDiv.textContent = '';
+        checkoutForm.reset();
+        submitButton.disabled = true;
+        qrScanned = false;
+    })
+    .catch(error => {
+        errorDiv.textContent = error.message;
+    });
+});
 
     </script>
 </body>
